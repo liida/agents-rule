@@ -21,7 +21,7 @@ role: standard
 - PostgreSQL
 - pytest
 - ruff
-- `pyproject.toml + uv`
+- `pyproject.toml + uv`（虚拟环境管理）
 
 除非用户明确要求别的栈，否则默认按上面这套初始化和约束。
 
@@ -134,7 +134,7 @@ apps:
 - `.gitattributes`：统一 Git 文本换行、二进制文件处理及特定文件属性。
 - `.env.local`：本地开发环境变量文件。
 - `.env.docker`：Docker / Compose 运行时环境变量文件。
-- `.gitignore`：忽略虚拟环境、缓存、环境变量文件、构建产物等无需提交的内容。
+- `.gitignore`：忽略虚拟环境（`uv venv` 默认创建的 `.venv` 目录）、缓存、环境变量文件、构建产物等无需提交的内容。
 - `logs/`：本地日志输出目录。默认应存在，并通过 `.gitignore` 忽略目录内运行日志，仅保留占位文件（如 `.gitkeep`）或目录结构说明。
 - `README.md`：项目说明、启动方式、开发命令、测试命令与常见注意事项。
 - `docker-compose.yml`：本地容器编排文件，默认应包含 app、db、redis 等核心服务。
@@ -351,6 +351,7 @@ apps:
 
 ### 运行体验
 
+- **必须使用 `uv` 创建和管理虚拟环境**（`uv venv`），而非 `python -m venv` 或其他工具
 - 优先提供 `uv sync` / `uv run` 命令
 - 默认支持 Docker Compose 启动 `app`、`db`、`redis`、`worker`
 - 可保留 SQLite 作为本地回退方案
@@ -366,7 +367,7 @@ apps:
 
 一个符合该标准的新项目起步阶段，至少应满足：
 
-在 `use_uv=true` 的默认场景下，至少应满足：
+在 `use_uv=true` 的默认场景下，**必须先使用 `uv venv` 创建虚拟环境**，然后满足：
 
 1. `uv sync`
 2. `uv run python manage.py check`
