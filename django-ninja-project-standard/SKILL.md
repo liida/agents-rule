@@ -5,7 +5,6 @@ compatibility: opencode
 role: standard
 requires:
   - project-workflow
-  - coding-rule
 ---
 
 # Django + Django Ninja 项目开发标准
@@ -28,12 +27,13 @@ requires:
 
 除非用户明确要求别的栈，否则默认按上面这套初始化和约束。
 
-## 何时使用
+## 强触发条件
 
-- 用户要求“新建一个 Python 项目”
-- 用户要求“给我一个 Django Ninja 项目标准”
-- 用户要求“给我一个默认带 Celery、Docker 的 Python 后端骨架”
-- 用户要求“参考 backend/apps/config 风格初始化项目”
+当出现以下任一情况时，应优先加载本 skill：
+- 用户要求"新建一个 Python 项目"
+- 用户要求"给我一个 Django Ninja 项目标准"
+- 用户要求"给我一个默认带 Celery、Docker 的 Python 后端骨架"
+- 用户要求"参考 backend/apps/config 风格初始化项目"
 - 用户没有明确指定技术栈，但希望直接采用仓库默认 Python 后端方案
 
 ## 默认理解的可调整项
@@ -458,6 +458,10 @@ class CreateUserRequest(Schema):
 
 - **必须使用 `uv` 创建和管理虚拟环境**（`uv venv`），而非 `python -m venv` 或其他工具
 - 优先提供 `uv sync` / `uv run` 命令
+- Docker 构建时将虚拟环境放在挂载目录之外，避免被 docker-compose volume 覆盖：
+  ```dockerfile
+  ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+  ```
 - 默认支持 Docker Compose 启动 `app`、`db`、`redis`、`worker`
 - 可保留 SQLite 作为本地回退方案
 - Celery 和 Docker 是默认工程组成，不应被写成可有可无的附属项
