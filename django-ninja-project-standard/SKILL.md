@@ -3,6 +3,9 @@ name: django-ninja-project-standard
 description: 定义 Django + Django Ninja + Celery + Docker 默认技术栈的项目起步标准，包含目录组织、文件职责、边界约定与默认开发实践。
 compatibility: opencode
 role: standard
+requires:
+  - project-workflow
+  - coding-rule
 ---
 
 # Django + Django Ninja 项目开发标准

@@ -3,6 +3,7 @@ name: coding-rule
 description: 减少常见 LLM 编程错误的行为准则。用于编写、审查或重构代码时避免过度复杂化、做精确修改、暴露假设并定义可验证的成功标准。
 compatibility: opencode
 role: coding
+base: true
 ---
 
 # 编码准则
