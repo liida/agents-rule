@@ -5,7 +5,7 @@ compatibility: opencode
 role: coding
 ---
 
-# Karpathy 编码准则
+# 编码准则
 
 用于减少常见 LLM 编码失误的通用行为准则。
 
