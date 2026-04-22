@@ -33,10 +33,13 @@ Django + Django Ninja + Celery + Redis + Docker Compose + PostgreSQL + pytest + 
 ```
 .
 ├── .dockerignore / .gitattributes / .gitignore
-├── .env.local / .env.docker
+├── .env.example
+├── .env.local
+├── .env
 ├── logs/
 ├── README.md
 ├── docker-compose.yml
+├── deploy/ (docker compose 部署挂载文件，如 nginx，postgres, redis等)
 └── backend/
     ├── Dockerfile / manage.py / pyproject.toml / pytest.ini
     ├── apps/
@@ -50,8 +53,9 @@ Django + Django Ninja + Celery + Redis + Docker Compose + PostgreSQL + pytest + 
 ### 根目录
 
 - `.dockerignore` / `.gitattributes` / `.gitignore`：Docker 和 Git 配置
+- `.env.example`：环境变量示例（不包含敏感信息）
 - `.env.local`：本地开发环境变量
-- `.env.docker`：容器环境变量
+- `.env`：容器环境变量
 - `logs/`：日志目录（运行日志不提交 Git）
 - `README.md`：项目说明
 - `docker-compose.yml`：容器编排
@@ -178,12 +182,12 @@ CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 ```
 
 ### 本地运行
-
+`.env.example` 复制为 `.env.local`，
 `.env.local` 配置数据库/Redis，使用 `uv venv` 创建虚拟环境
 
 ### 容器运行
-
-`.env.docker` 配置容器环境，`docker-compose up` 启动 app/db/redis/worker 服务
+`.env.example` 复制为 `.env`，
+`.env` 配置容器环境，`docker-compose up` 启动 app/db/redis/worker 服务
 
 ### 验证步骤
 
