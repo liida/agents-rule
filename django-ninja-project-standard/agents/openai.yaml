@@ -1,0 +1,4 @@
+interface:
+  display_name: "Django Ninja Project Standard"
+  short_description: "Django Ninja 后端标准骨架与工程约定"
+  default_prompt: "Use $django-ninja-project-standard to create or review a Django Ninja backend project."

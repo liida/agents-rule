@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Workflow"
+  short_description: "仓库任务工作流与项目记忆规则"
+  default_prompt: "Use $project-workflow to complete this repository task with proper context, validation, and memory updates."

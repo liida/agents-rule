@@ -1,47 +1,35 @@
-# 全局 Skills 说明
+# 本地 Skills 说明
 
-用于说明当前全局 skills 的职责边界、默认加载策略与维护原则。
+此目录保存本机可用的自定义 Codex skills，用于沉淀稳定的项目工作流和专项工程标准。
 
-## 当前保留的 skills
+## 当前 skills
 
-### 1. `project-workflow`
-负责项目级任务流程：
-- 新任务开始前读取稳定上下文
-- 编码前检索现有实现与复用模式
-- 任务中决定何时连续推进、何时暂停确认
-- 改动后进行本地验证
-- 按需回写长期有效的项目记忆
+### `project-workflow`
 
-### 2. `coding-rule`
-负责通用编码行为：
-- 不假设，不隐藏困惑
-- 简单优先
-- 精确修改
-- 用可验证目标驱动实现
+仓库级开发任务工作流：
+- 任务开始前读取 `.ai/memory.md`、`AGENTS.md` 和相关上下文。
+- 编码前理解现有实现、复用模式、命名风格和验证方式。
+- 实现时保持简单优先、精确修改和风险可控。
+- 完成后执行匹配范围的本地验证，并说明无法验证的部分。
+- 有长期价值时更新项目记忆，避免记录敏感信息或临时日志。
 
-### 3. `django-ninja-project-standard`
-负责定义 Python + Django + Django Ninja 新项目开发标准。
+### `django-ninja-project-standard`
 
-## 依赖机制
+Django Ninja 后端项目标准：
+- 默认技术栈：Django + Django Ninja + Celery + Redis + PostgreSQL + Docker Compose + uv。
+- 约束 `backend/`、`config/`、`apps/common/`、`apps/example/` 等目录边界。
+- 固定 API 入口、健康检查、文档地址、环境变量和 Docker 服务名。
+- 适用于新建、改造或评审 Django Ninja/Python API 后端项目。
 
-通过 skill 元数据中的 `requires` 字段实现自动依赖：
+## 使用关系
 
-| Skill | requires |
-|-------|----------|
-| `django-ninja-project-standard` | `project-workflow`, `coding-rule` |
-| `project-workflow` | `coding-rule` |
-| `coding-rule` | (base，无依赖) |
+- 仓库内开发任务优先使用 `project-workflow`。
+- Django Ninja 后端任务使用 `django-ninja-project-standard`，并同时遵守 `project-workflow`。
+- 非 Django Ninja 场景不默认套用 Django 标准。
 
-加载时会自动递归加载所有依赖。
+## 维护原则
 
-## 默认加载策略
-
-- 新建 Django Ninja 项目：加载 `django-ninja-project-standard`
-- 仓库内开发任务：加载 `project-workflow`
-- 小范围代码修改：加载 `coding-rule`
-
-## 分工原则
-
-- `project-workflow` 管流程
-- `coding-rule` 管编码行为
-- 专项标准 skill 只在对应技术场景启用
+- `SKILL.md` 放触发条件、关键流程和硬约束，保持简洁可执行。
+- `agents/openai.yaml` 放 UI 元数据，需与 `SKILL.md` 的职责一致。
+- 模板、脚本、参考资料分别放入 skill 目录下的 `assets/`、`scripts/`、`references/`。
+- 不在 skills 中保存密钥、令牌、密码、私钥或项目敏感配置。

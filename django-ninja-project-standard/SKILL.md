@@ -1,213 +1,183 @@
 ---
 name: django-ninja-project-standard
-description: 定义 Django + Django Ninja + Celery + Docker 默认技术栈的项目起步标准，包含目录组织、文件职责、边界约定与默认开发实践。
-compatibility: opencode
+description: Django Ninja 后端项目标准。用于新建、改造或评审 Django/Django Ninja/Python API 后端项目，默认采用 Django + Django Ninja + Celery + Redis + PostgreSQL + Docker Compose + uv + pytest + ruff，约束标准目录、配置、应用分层、API 路由、环境变量、Docker 服务和验证方式；适用于用户要求 Django Ninja 项目、Python 后端骨架、带 Celery/Docker 的 API 服务，或未指定后端技术栈但需要采用本地默认后端标准的场景。
+metadata:
+  short-description: Django Ninja 后端标准骨架
 ---
 
-# Django + Django Ninja 项目开发标准
+# Django Ninja 项目标准
 
-> 本技能**必须**依赖 `@project-workflow`。
-> 在开始任何编码工作前，**必须先加载并读取** `@project-workflow` 的内容。
-> 所有的编码行为、验证步骤和文件修改必须严格遵守 `@project-workflow` 中定义的“编码行为准则”和“项目任务流程”。
-> **不要**仅凭记忆执行，**必须**加载该文件以确保上下文完整。
+本 skill 用于把后端项目落到统一工程标准。除非用户明确要求其他技术栈，否则默认采用 Django + Django Ninja + Celery + Redis + PostgreSQL + Docker Compose + uv。
 
-## 目标与触发条件
+## 前置规则
 
-**目标**：为 Python 项目开始开发时提供统一的目录组织、文件职责、边界约定和默认实践。
+- 同时遵守 `project-workflow`：先理解现有仓库，再精确修改，最后做匹配范围的验证。
+- 新建项目可直接生成标准骨架；已有项目只补齐缺失能力，保留既有业务代码和可用约定。
+- 如果用户要求与本标准冲突，先指出冲突并确认取舍，不要静默替换技术栈或目录布局。
+- 不要把本 skill 当作通用 Python 模板；非 Django Ninja 后端场景不使用。
 
-**触发条件**：用户要求"新建一个 Python 项目"、"Django Ninja 项目标准"、"带 Celery/Docker 的后端骨架"等，或没有明确指定技术栈但希望采用仓库默认方案。
+## 默认技术栈
 
-**默认参数**：
-- `project_name`、`python_package`、`backend_dir`（默认 `backend`）、`api_prefix`（默认 `/api`）
-- `use_uv`/`use_celery`/`use_docker`/`use_postgres`/`use_redis`（默认 `true`）
-- `allow_sqlite_fallback`（默认 `true`）、`apps`（默认 `common`、`example`）
+- Python 3.10+、Django、Django Ninja
+- PostgreSQL 主数据库；SQLite 仅允许作为本地 fallback
+- Redis 作为 cache、Celery broker 和 result backend
+- Celery worker 处理异步任务
+- Docker Compose 管理 `app`、`worker`、`db`、`redis`
+- uv 管理依赖，`pyproject.toml` 作为依赖和工具配置入口
+- pytest 做测试，ruff 做静态检查
 
-## 技术栈
+## 标准目录
 
-Django + Django Ninja + Celery + Redis + Docker Compose + PostgreSQL + pytest + ruff + pyproject.toml + uv
-
-除非用户明确要求别的栈，否则默认这套。
-
-## 目录结构
-
-```
+```text
 .
-├── .dockerignore / .gitattributes / .gitignore
+├── .dockerignore
 ├── .env.example
-├── .env.local
-├── .env
-├── logs/
+├── .gitattributes
+├── .gitignore
 ├── README.md
 ├── docker-compose.yml
-├── deploy/ (docker compose 部署挂载文件，如 nginx，postgres, redis等)
+├── logs/
+│   └── .gitkeep
+├── deploy/
+│   └── README.md
 └── backend/
-    ├── Dockerfile / manage.py / pyproject.toml / pytest.ini
+    ├── Dockerfile
+    ├── manage.py
+    ├── pyproject.toml
+    ├── pytest.ini
     ├── apps/
-    │   ├── common/ (api.py, schemas/, capabilities/, libs/, tests/)
-    │   └── example/ (apps.py, api.py, models.py, schemas.py, services.py, tests/)
-    └── config/ (settings.py, urls.py, asgi.py, wsgi.py, celery_app.py)
+    │   ├── common/
+    │   │   ├── api.py
+    │   │   ├── apps.py
+    │   │   ├── capabilities/
+    │   │   ├── libs/
+    │   │   ├── schemas/
+    │   │   └── tests/
+    │   └── example/
+    │       ├── api.py
+    │       ├── apps.py
+    │       ├── models.py
+    │       ├── schemas.py
+    │       ├── services.py
+    │       └── tests/
+    └── config/
+        ├── __init__.py
+        ├── asgi.py
+        ├── celery_app.py
+        ├── settings.py
+        ├── urls.py
+        └── wsgi.py
 ```
 
-## 文件职责
+允许按业务新增 app；不要删除 `common` 和 `example`。已有项目可以暂不具备完整 `deploy/` 内容，但应保留目录作为 nginx、postgres、redis 等部署配置入口。
+
+## 生成或改造流程
+
+1. 判断项目形态：新建项目生成骨架；已有项目先审查目录、依赖、配置、测试和运行方式。
+2. 补齐根目录文件：`.env.example`、`.gitignore`、`.dockerignore`、`.gitattributes`、`README.md`、`docker-compose.yml`、`logs/.gitkeep`。
+3. 补齐 `backend/`：`manage.py`、`pyproject.toml`、`pytest.ini`、`Dockerfile`。
+4. 补齐 `backend/config/`：Django settings、URL、ASGI/WSGI、Celery 入口。
+5. 补齐 `backend/apps/common/`：公共 schema、health API、跨 app 能力和底层支撑库。
+6. 补齐 `backend/apps/example/`：最小业务示例，覆盖 model/schema/service/api/test 链路。
+7. 配置 `/api/`、`/api/docs`、`/api/openapi.json`、`/api/ops/health` 并确保可访问。
+8. 执行当前环境能完成的最小验证，无法验证时说明原因和用户可复现命令。
+
+## 分层职责
 
 ### 根目录
 
-- `.dockerignore` / `.gitattributes` / `.gitignore`：Docker 和 Git 配置
-- `.env.example`：环境变量示例（不包含敏感信息）
-- `.env.local`：本地开发环境变量
-- `.env`：容器环境变量
-- `logs/`：日志目录（运行日志不提交 Git）
-- `README.md`：项目说明
-- `docker-compose.yml`：容器编排
+- `.env.example`：提交到 Git 的环境变量样例，不含真实密钥。
+- `.env`：Docker Compose 默认环境文件，通常不提交。
+- `.env.local`：本地直接运行环境文件，通常不提交。
+- `docker-compose.yml`：定义 `app`、`worker`、`db`、`redis`。
+- `logs/`：运行日志目录，只提交 `.gitkeep`。
+- `README.md`：说明本地运行、Docker 运行、测试、健康检查和 API 文档地址。
 
-### backend/
+### `backend/config/`
 
-- `manage.py`：Django 管理入口（runserver/migrate/createsuperuser）
-- `pyproject.toml`：依赖与工具配置
-- `pytest.ini`：pytest 配置
-- `Dockerfile`：镜像构建
+- `settings.py`：只放框架配置；从环境变量读取配置；不写业务逻辑。
+- `urls.py`：挂载 Django Ninja API、docs、OpenAPI JSON 和必要的 Django URL。
+- `celery_app.py`：Celery app 初始化入口，供 worker 和 Django 共用。
+- `asgi.py` / `wsgi.py`：标准 Django 入口，不夹带业务逻辑。
 
-### backend/config/
+### `backend/apps/common/`
 
-- `settings.py`：Django 配置（读取环境变量、注册 apps、中间件、数据库、缓存、Celery、日志），不承载业务逻辑
-- `urls.py`：路由聚合
-- `asgi.py` / `wsgi.py`：ASGI/WSGI 入口
-- `celery_app.py`：Celery 入口
+`common` 是项目级公共 app，不承载具体业务域。
 
-### backend/apps/common/
+- `api.py`：聚合 ops/health 等公共路由。
+- `schemas/`：通用响应、分页、错误和健康检查 schema。
+- `capabilities/`：认证、权限、异常处理、响应封装、日志等跨 app 能力。
+- `libs/`：cache、tasks、clients、storage、utils 等底层支撑库。
+- `tests/`：公共能力和 health API 测试。
 
-项目级公共 app，不承载业务域：
-- `api.py`：Router 聚合
-- `schemas/`：通用 schema（base.py, response.py, health.py）
-- `capabilities/`：公共能力（health.py, auth.py, permissions.py, exceptions.py, responses.py, logging.py）
-- `libs/`：底层支撑（api/, cache/, tasks/, clients/, storage/, utils/）
+### `backend/apps/<business_app>/`
 
-### backend/apps/<app>/
+业务 app 围绕单一业务域组织。
 
-业务 app，围绕单一业务域：
-- `apps.py`：Django 注册
-- `api.py`：接口层（定义 Router、路由、请求入口）
-- `schemas.py`：数据结构（请求体、响应体）
-- `services.py`：业务逻辑（用例编排、领域逻辑）
-- `models.py`：ORM 模型（需要持久化时）
-- `tests/`：测试目录
+- `api.py`：Django Ninja router 和请求入口；不要堆业务逻辑。
+- `schemas.py`：请求、响应和内部传输 schema。
+- `services.py`：用例编排、业务规则和事务边界。
+- `models.py`：ORM 模型；只在需要持久化时创建。
+- `tests/`：覆盖 schema、service、API 和关键模型行为。
 
-## 编码规范
+## API 与 schema 约定
 
-### Model 字段规范
+- API 总入口固定为 `/api/`。
+- 健康检查固定为 `/api/ops/health`。
+- API 文档固定为 `/api/docs`。
+- OpenAPI JSON 固定为 `/api/openapi.json`。
+- 每个业务 app 暴露一个 `router`，在 `config/urls.py` 统一挂载。
+- 请求/响应 schema 使用 Django Ninja schema；复杂业务输入不要直接暴露 ORM model。
+- `example` app 至少提供一个可工作的示例接口，方便验证完整链路。
 
-```python
-class User(models.Model):
-    username = models.CharField(max_length=50, unique=True, verbose_name="用户名", help_text="...")
-    email = models.EmailField(unique=True, verbose_name="邮箱", help_text="...")
-    role = models.ForeignKey("Role", on_delete=models.PROTECT, verbose_name="角色", help_text="...")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-```
+## 配置与环境变量
 
-字段必须包含：verbose_name（显示名称）、help_text（含义用途）、约束标记（unique/db_index/choices/default）、外键关系（on_delete/related_name）
+- 必备环境变量至少覆盖 `DJANGO_SECRET_KEY`、`DJANGO_DEBUG`、`DJANGO_ALLOWED_HOSTS`、数据库、Redis、Celery broker/result backend。
+- 本地直接运行优先读取 `.env.local`；容器运行使用 `.env`；示例值维护在 `.env.example`。
+- 生产相关默认值必须保守：`DJANGO_DEBUG` 默认关闭，密钥缺失时应显式失败或只允许开发 fallback。
+- 不提交 `.env`、`.env.local`、真实密钥、令牌、密码或私钥。
 
-### Schema 字段规范
+## Docker 与依赖
 
-**所有 Schema（请求、响应、内部使用）必须遵守此规范**
+- `Dockerfile` 基于 `python:3.10-slim` 或更高兼容版本，安装 uv，并通过 `uv sync` 安装依赖。
+- `app` 使用 `python manage.py runserver 0.0.0.0:8000` 作为开发默认命令。
+- `worker` 复用后端镜像并运行 Celery worker。
+- `db` 使用 PostgreSQL；`redis` 使用 Redis。
+- `pyproject.toml` 至少包含 Django、Django Ninja、Celery、Redis client、PostgreSQL driver、pytest、pytest-django、ruff。
 
-```python
-class UserSchema(Schema):
-    id: int = Field(description="用户唯一标识 ID")
-    username: str = Field(description="用户名，用于登录")
+## 验证标准
 
-class CreateUserRequest(Schema):
-    username: str = Field(description="用户名，4-20 位字母数字下划线")
-    email: EmailStr = Field(description="有效的邮箱地址")
-```
+优先执行当前环境下能完成的最小验证，常用命令按相关性选择：
 
-字段说明应包含：字段含义、格式约束、取值范围、业务规则。避免模糊描述如"用户 ID"，应写清楚"用户唯一标识 ID"。
+1. `ruff check .`
+2. `pytest`
+3. `python manage.py check`
+4. `docker-compose config` 或 `docker compose config`
+5. `docker-compose run --rm app pytest` 或 `docker compose run --rm app pytest`
+6. 访问或测试 `/api/ops/health`
 
-### 文件拆分时机
-
-文件膨胀时可拆分为 `api/`、`models/`、`schemas/`、`services/`，保持 `__init__.py` 入口。小 app 默认单文件。
+如果依赖未安装、Docker 不可用或网络受限，说明未执行命令、失败原因、当前风险和用户可复现的下一步。
 
 ## 硬约束
 
-**固定使用**：
+必须保留：
 - 目录：`backend/`、`backend/config/`、`backend/apps/`
-- App：`common`（含 health）、`example`
+- App：`common`、`example`
+- 入口：`backend/manage.py`、`backend/config/celery_app.py`、`backend/pyproject.toml`
+- 服务：`app`、`worker`、`db`、`redis`
 - 路径：`/api/`、`/api/ops/health`、`/api/docs`、`/api/openapi.json`
-- 日志：`logs/`
-- Compose：`docker-compose.yml`，服务名 `app/db/redis/worker`
-- 入口：`backend/config/celery_app.py`、`backend/pyproject.toml`
+- 日志目录：`logs/`
 
-**不要改成**：`src/` 布局、非 backend、非 common/example、省略 worker/redis/db
-
-## 开发约定
-
-### 配置
-
-- 全部从环境变量读取
-- 数据库默认 PostgreSQL，可选 SQLite
-- 缓存/broker 默认 Redis
-- settings.py 不承载业务逻辑
-
-### 日志
-
-Django LOGGING 配置，`logs/` 目录，运行日志不提交 Git
-
-### 版本策略
-
-优先稳定主流版本，仅用户指定、项目既有、明确兼容性边界时固定版本
-
-### 路由
-
-Django Ninja，挂载 `/api/`，`/api/ops/health` 健康检查
-
-### API 文档
-
-`/api/docs` 文档、`/api/openapi.json` JSON，`example` 包含完整示例
-
-## 运行与验证
-
-### Dockerfile
-
-```dockerfile
-FROM python:3.10-slim
-WORKDIR /app
-RUN pip install uv
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV UV_PROJECT_ENVIRONMENT=/opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-COPY backend/pyproject.toml /app/
-RUN uv sync
-COPY backend/ /app/
-EXPOSE 8000
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-```
-
-### 本地运行
-`.env.example` 复制为 `.env.local`，
-`.env.local` 配置数据库/Redis，使用 `uv venv` 创建虚拟环境
-
-### 容器运行
-`.env.example` 复制为 `.env`，
-`.env` 配置容器环境，`docker-compose up` 启动 app/db/redis/worker 服务
-
-### 验证步骤
-
-**优先本地验证**（遵循 project-workflow 规则：优先当前环境可完成的最小验证）：
-
-1. `ruff check .` - 静态检查
-2. `pytest` - 本地测试
-3. `python manage.py check` - Django 检查
-
-**Docker 验证**（补充验证，确保容器环境一致）：
-
-4. `docker-compose config` - 配置检查
-5. `docker-compose run --rm app uv sync` - 依赖安装
-6. `docker-compose run --rm app pytest` - 容器测试
-7. `/api/ops/health` - 健康检查
-
-## 禁止事项
-
-不改成：通用 Python 模板、Celery/Docker 按需、目录树、移除 Ninja、backend 改名、省略 common/example、health 独立 app、common 承载业务、遗漏日志
+禁止默认改成：
+- `src/` 布局或把 Django 项目直接放到仓库根目录。
+- FastAPI、Flask、DRF 或纯 Python 模板。
+- 省略 Celery、Redis、PostgreSQL、Docker Compose，除非用户明确要求。
+- 把 health 做成独立业务 app。
+- 让 `common` 承载具体业务域。
+- 在 `settings.py`、`api.py` 中堆积业务逻辑。
 
 ## 维护要求
 
-仅维护本文件，规则变化时直接更新
+- 本 skill 只维护 Django Ninja 后端标准；通用编码流程放到 `project-workflow`。
+- 更新规则时保持描述、目录结构、硬约束和验证步骤一致。
+- 如果增加模板、脚本或参考资料，放入本 skill 的 `assets/`、`scripts/` 或 `references/`，并说明何时读取或执行。
